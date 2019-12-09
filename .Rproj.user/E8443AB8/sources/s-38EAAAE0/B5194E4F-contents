@@ -1,0 +1,11 @@
+library("rmarkdown")
+
+render_report = function(Ort) {
+  rmarkdown::render("Gesundheitsbericht.Rmd", 
+                    params = list(Ort = Ort),
+                    output_file = paste0("Gesundheitsbericht-", Ort),
+                    output_dir = "_posts"
+  )
+}
+
+render_report("Reinickendorf")

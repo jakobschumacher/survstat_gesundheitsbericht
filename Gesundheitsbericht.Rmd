@@ -1,19 +1,12 @@
 ---
-title: "Gesundheitsbericht Infektionsschutz"
-author: "Jakob Schumacher"
-date: "7 10 2019"
+title: "Gesundheitsbericht Survstat"
+author: "J. Schumacher"
+date: "7.10.2019"
 output:
-  html_document: default
-  word_document: default
+  md_document: 
+    variant: gfm
 ---
 
-
-# Hauptbotschaften
-- XX % der Reinickendorfer erleiden eine Magen-Darm-Grippe 
-- Reinickendorf ist Legionellenhochburg in Deutschland
-- Reinickendorfer Kindern fehlen Impfungen
-- In Reinickendorf gab es XXX Fälle an multiresistenten Erregern
-- Es gab XXX Ausbrüche von infektiösen Ausbrüche in Reinickendorf
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, error = FALSE)
@@ -94,22 +87,31 @@ readSurvstat <- function(file){
 ```
 
 
-```{r}
+```{r data-reading}
+
+
+# List all files in the params folder. Params is taken from the RMarkdown yml
+folder <- paste0("data/", params$Ort, "/")
+OrtInzidenz <- list.files(folder)[str_detect(list.files(folder), "Inzidenz")]
+OrtAnzahl <- list.files(folder)[str_detect(list.files(folder), "Fallzahl")]
+fileOrtInzidenz <- as.character(paste0(folder, OrtInzidenz))
+fileOrtAnzahl <- as.character(paste0(folder, OrtAnzahl))
+
 
 # Read in the data
-data <- bind_rows(
-  readSurvstat("data/FallzahlKrankheit_Jahrwoche_NurReinickendorf.zip")  %>% 
-    left_join(readSurvstat("data/InzidenzKrankheit_Jahrwoche_NurReinickendorf.zip")),
-  readSurvstat("data/FallzahlKrankheit_Jahrwoche_Deutschland.zip") %>% 
-    left_join(readSurvstat("data/InzidenzKrankheit_Jahrwoche_Deutschland.zip"))
-  )
- 
+dataOrt <- readSurvstat(fileOrtAnzahl)  %>%
+  left_join(readSurvstat(fileOrtInzidenz), by = c("Krankheit", "Meldejahrmitwoche", "Quellenangabe", "Referenzdefinition", "Ort"))
+
+dataDeutschland <- readSurvstat("data/Deutschland/FallzahlKrankheit_Jahrwoche_Deutschland.zip") %>%
+    left_join(readSurvstat("data/Deutschland/InzidenzKrankheit_Jahrwoche_Deutschland.zip"), by = c("Krankheit", "Meldejahrmitwoche", "Quellenangabe", "Referenzdefinition", "Ort"))
+
+data <- bind_rows(dataOrt, dataDeutschland)
 ```
 
 
 
 # Grafiken von Infektionskrankheiten
-```{r, results='asis'}
+```{r grafiken, results='asis', fig.path='Figs/'}
 # Set the variables 
 
 cuttingepoint1 = 10
