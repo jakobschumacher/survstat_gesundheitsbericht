@@ -1,1 +1,0 @@
-# Grafiken von Infektionskrankheiten

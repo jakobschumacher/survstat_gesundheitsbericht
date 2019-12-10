@@ -1,0 +1,13 @@
+---
+title: "Hauptbotschaften"
+author: "Jakob Schumacher"
+date: "9 12 2019"
+output: html_document
+---
+
+# Hauptbotschaften
+- XX % der Reinickendorfer erleiden eine Magen-Darm-Grippe 
+- Reinickendorf ist Legionellenhochburg in Deutschland
+- Reinickendorfer Kindern fehlen Impfungen
+- In Reinickendorf gab es XXX Fälle an multiresistenten Erregern
+- Es gab XXX Ausbrüche von infektiösen Ausbrüche in Reinickendorf
