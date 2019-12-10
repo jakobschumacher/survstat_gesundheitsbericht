@@ -20,26 +20,65 @@ data <- readRegion(Region = as.character(params$Ort))
 ```
 
 
-
 # XX % der Reinickendorfer erleiden eine Magen-Darm-Grippe 
 ```{r}
 df <- data %>% 
   filter(str_detect(Ort, "Reinickendorf")) %>% 
-  filter(str_detect(Krankheit, "Campylobacter-Enteritis|Norovirus|Rotavirus|Salmonellose|Yersiniose")) %>% 
+  filter(str_detect(Krankheit, "Campylobacter-Enteritis|Norovirus|Rotavirus|Salmonellose|Yersiniose|Listeriose")) %>% 
   mutate(Meldejahrmitwoche = floor_date(Meldejahrmitwoche, "1 year")) %>%
   group_by(Meldejahrmitwoche, Krankheit) %>% 
   summarise(summe = mean(Inzidenz))
+
+
+ # Make the graphs description
+  Quellenangabe <- data$Quellenangabe[1]
+  title <- paste("Fälle von", Krankheitsvar)
+  subtitle <- paste(data$Ort[1], 
+                    "\n vom", 
+                    strftime(min(data$Meldejahrmitwoche), format = "%d.%m.%Y"),
+                    "bis zum",
+                    strftime(max(data$Meldejahrmitwoche), format = "%d.%m.%Y"))
   
 ggplot(data = df, aes(y = summe, x = Meldejahrmitwoche, fill = Krankheit)) +
-        geom_(stat = "identity") +
-        theme_classic() 
+  geom_bar(stat = "identity") +
+  labs(title = title,
+       subtitle = subtitle,
+       caption = paste("Datenquelle:", Quellenangabe)) +
+  theme_classic() 
 
 ```
-
 
 
 
 - Reinickendorf ist Legionellenhochburg in Deutschland
 - Reinickendorfer Kindern fehlen Impfungen
 - In Reinickendorf gab es XXX Fälle an multiresistenten Erregern
-- Es gab XXX Ausbrüche von infektiösen Ausbrüche in Reinickendorf
+
+
+# Es gab XXX Ausbrüche von infektiösen Ausbrüche in Reinickendorf
+```{r}
+df <- data %>% 
+  filter(str_detect(Ort, "Reinickendorf")) %>% 
+  filter(str_detect(Krankheit, "MRSA, invasive Infektion|Acinetobacter-Infektion oder –Kolonisation|Clostridioides difficile|nterobacteriaceae-Infektion oder –Kolonisation ")) %>% 
+  mutate(Meldejahrmitwoche = floor_date(Meldejahrmitwoche, "1 year")) %>%
+  group_by(Meldejahrmitwoche, Krankheit) %>% 
+  summarise(summe = mean(Inzidenz))
+
+
+ # Make the graphs description
+  Quellenangabe <- data$Quellenangabe[1]
+  title <- paste("Fälle von", Krankheitsvar)
+  subtitle <- paste(data$Ort[1], 
+                    "\n vom", 
+                    strftime(min(data$Meldejahrmitwoche), format = "%d.%m.%Y"),
+                    "bis zum",
+                    strftime(max(data$Meldejahrmitwoche), format = "%d.%m.%Y"))
+  
+ggplot(data = df, aes(y = summe, x = Meldejahrmitwoche, fill = Krankheit)) +
+  geom_bar(stat = "identity") +
+  labs(title = title,
+       subtitle = subtitle,
+       caption = paste("Datenquelle:", Quellenangabe)) +
+  theme_classic() 
+
+```
