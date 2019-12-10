@@ -3,10 +3,42 @@ title: "Hauptbotschaften"
 author: "Jakob Schumacher"
 date: "9 12 2019"
 output: html_document
+params:
+  Ort: "Reinickendorf"
 ---
+```{r}
+suppressMessages(library("ISOweek"))
+suppressMessages(library("lubridate"))
+suppressMessages(library("pdftools"))
+suppressMessages(library("tidyverse"))
+suppressMessages(setwd(here::here()))
 
-# Hauptbotschaften
-- XX % der Reinickendorfer erleiden eine Magen-Darm-Grippe 
+source("R/readSurvstat.R")
+source("R/readRegion.R")
+source("R/plot.R")
+data <- readRegion(Region = as.character(params$Ort))
+```
+
+
+
+# XX % der Reinickendorfer erleiden eine Magen-Darm-Grippe 
+```{r}
+df <- data %>% 
+  filter(str_detect(Ort, "Reinickendorf")) %>% 
+  filter(str_detect(Krankheit, "Campylobacter-Enteritis|Norovirus|Rotavirus|Salmonellose|Yersiniose")) %>% 
+  mutate(Meldejahrmitwoche = floor_date(Meldejahrmitwoche, "1 year")) %>%
+  group_by(Meldejahrmitwoche, Krankheit) %>% 
+  summarise(summe = mean(Inzidenz))
+  
+ggplot(data = df, aes(y = summe, x = Meldejahrmitwoche, fill = Krankheit)) +
+        geom_(stat = "identity") +
+        theme_classic() 
+
+```
+
+
+
+
 - Reinickendorf ist Legionellenhochburg in Deutschland
 - Reinickendorfer Kindern fehlen Impfungen
 - In Reinickendorf gab es XXX Fälle an multiresistenten Erregern

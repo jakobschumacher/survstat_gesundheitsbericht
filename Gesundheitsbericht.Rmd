@@ -16,23 +16,29 @@ library("pdftools")
 suppressMessages(library("tidyverse"))
 suppressMessages(setwd(here::here()))
 
-Region <- params$Ort
-source("readSurvstat.R")
-source("readRegion.R")
-source("plot.R")
-data <- readRegion()
+Regionsvalue <- as.character(params$Ort)
+
+source("R/readSurvstat.R")
+source("R/readRegion.R")
+source("R/plot.R")
+data <- readRegion(Region = Regionsvalue)
 ```
 
 ```{r Grafiken, results='asis'}
 
-krankheitsliste <- data %>% filter(str_detect(Ort, as.character(params$Ort))) %>% group_by(Krankheit) %>% summarise(summe = sum(Anzahl)) %>% filter(summe > 20) %>% pull(Krankheit) %>% as.character()
+krankheitsliste <- data %>% 
+  filter(str_detect(Ort, as.character(params$Ort))) %>% 
+  group_by(Krankheit) %>% summarise(summe = sum(Anzahl)) %>% 
+  mutate(floor = ifelse(summe > 200, "3 months", "1 year")) %>%                                   
+  filter(summe > 20) 
 
-for (i in krankheitsliste) {
+for (i in krankheitsliste$Krankheit) {
+  floorvalue <- krankheitsliste %>% filter(Krankheit == i) %>% pull(floor)
   cat("\n")
   cat("\n")  
   cat("##", i, "\n")
   cat("\n")
-  print(fallzahlPlot(i))
-  print(inzidenzPlot(i))
+  print(fallzahlPlot(i), floor = floorvalue)
+  print(inzidenzPlot(i), floor = floorvalue)
 }
 ```
