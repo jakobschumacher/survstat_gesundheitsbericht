@@ -50,12 +50,12 @@ inzidenzPlot <- function(Krankheitsvar = "Acinetobacter-Infektion oder –Koloni
   df <- data %>% filter(Krankheit == Krankheitsvar) %>%
     mutate(Meldejahrmitwoche = floor_date(Meldejahrmitwoche, floor)) %>%
     group_by(Meldejahrmitwoche, Ort) %>% 
-    filter(Meldejahrmitwoche < as.Date("2020-01-01", origin = "1970-01-01"))  
+    summarise(Inzidenz = mean(Inzidenz)) 
   
-  earliestDate <- min(df %>% filter(Anzahl != 0) %>% pull(Meldejahrmitwoche))
-  latestDate <- max(df %>% filter(Anzahl != 0) %>% pull(Meldejahrmitwoche))
-  
+  earliestDate <- min(df %>% filter(Inzidenz != 0) %>% pull(Meldejahrmitwoche))
+  latestDate <- max(df %>% filter(Inzidenz != 0) %>% pull(Meldejahrmitwoche))
   df <- df %>% filter(Meldejahrmitwoche > earliestDate & Meldejahrmitwoche < latestDate)
+  
   print(
     ggplot(data = df, aes(y = Inzidenz, x = Meldejahrmitwoche, color = Ort)) +
       geom_line(stat = "identity") +
@@ -64,6 +64,8 @@ inzidenzPlot <- function(Krankheitsvar = "Acinetobacter-Infektion oder –Koloni
            subtitle = subtitle,
            caption = paste("Datenquelle:", Quellenangabe)) +
       theme_classic() +
-      expand_limits(y = 0)
+      expand_limits(y = 0) +
+      scale_color_manual(values = c("#CC6666", "#9999CC")) +
+      theme(legend.position="bottom")
   )
 }

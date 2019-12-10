@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, error = FA
 library("knitr")
 library("ISOweek")
 library("lubridate")
+library("pdftools")
 suppressMessages(library("tidyverse"))
 suppressMessages(setwd(here::here()))
 
@@ -22,127 +23,16 @@ source("plot.R")
 data <- readRegion()
 ```
 
-```{r}
+```{r Grafiken, results='asis'}
 
 krankheitsliste <- data %>% filter(str_detect(Ort, as.character(params$Ort))) %>% group_by(Krankheit) %>% summarise(summe = sum(Anzahl)) %>% filter(summe > 20) %>% pull(Krankheit) %>% as.character()
 
 for (i in krankheitsliste) {
-  
-    cat("#", i, "\n")
-    cat("\n")
-    
-    fallzahlPlot(i)
-    inzidenzPlot(i)
-
+  cat("\n")
+  cat("\n")  
+  cat("##", i, "\n")
+  cat("\n")
+  print(fallzahlPlot(i))
+  print(inzidenzPlot(i))
 }
-
-```
-
-# Grafiken von Infektionskrankheiten
-```{r grafiken, results='asis'}
-# Set the variables 
-
-cuttingepoint1 = 10
-cuttingepoint2 = 100
-
-
-krankheitsliste <- data %>%
-  mutate(Krankheit = as.character(Krankheit)) %>%
-  pull(Krankheit) %>%
-  unique()
-
-
- # i = krankheitsliste[6]
-# data <- head(data, 2000)
-
-for (i in krankheitsliste) {
-  
-    cat("#", i, "\n")
-    cat("\n")
-  
-  # Autodecision which plot to take
-  totalnumber <- data %>% filter(Krankheit == i) %>% summarise(sum(Anzahl)) %>% pull()
-  autodecision <- "1 year"
-  if (totalnumber > cuttingepoint1) autodecision <- "1 year"
-  if (totalnumber > cuttingepoint2) autodecision <- "3 months"
-  
-  # Make the graphs description
-  Quellenangabe <- data$Quellenangabe[1]
-  title <- paste("Fälle von", i)
-  subtitle <- paste(data$Ort[1], 
-                    "\n vom", 
-                    strftime(min(data$Meldejahrmitwoche), format = "%d.%m.%Y"),
-                    "bis zum",
-                    strftime(max(data$Meldejahrmitwoche), format = "%d.%m.%Y"))
-  
-  
-  
-  # Filter the data and floor to the autodecision
-  df <- data %>% filter(Krankheit == i) %>%
-    mutate(Meldejahrmitwoche = floor_date(Meldejahrmitwoche, autodecision)) %>%
-    group_by(Meldejahrmitwoche, Ort) %>% 
-    summarize(Anzahl = sum(Anzahl))
-  
-  if (totalnumber > cuttingepoint1) {
-    # Plot the graph
-  print(
-    ggplot(data = df, aes(y = Anzahl, x = Meldejahrmitwoche)) +
-    geom_bar(stat = "identity", fill = "steelblue") +
-      facet_grid(Ort~., scales = "free") +
-    labs(title = title,
-              subtitle = subtitle,
-              caption = paste("Datenquelle:", Quellenangabe)) +
-    theme_classic() 
-  )
-  
-  # Inzidenz
-    df <- data %>% filter(Krankheit == i) %>%
-      mutate(Meldejahrmitwoche = floor_date(Meldejahrmitwoche, "1 year")) %>%
-      group_by(Meldejahrmitwoche, Ort) %>% 
-      summarize(Inzidenz = mean(Inzidenz)) %>% 
-      filter(Meldejahrmitwoche < as.Date("2020-01-01", origin = "1970-01-01"))  
-  
-  print(
-    ggplot(data = df, aes(y = Inzidenz, x = Meldejahrmitwoche, color = Ort)) +
-      geom_line(stat = "identity") +
-      geom_point() +
-      labs(title = title,
-           subtitle = subtitle,
-           caption = paste("Datenquelle:", Quellenangabe)) +
-      theme_classic() +
-      expand_limits(y = 0)
-  )
-  
-  
-  
-  }
-  
-  else {
-    cat("\n")
-    cat("\n")
-    cat("\n")
-    cat(paste("In",data$Ort[1],"sind zwischen dem", strftime(min(data$Meldejahrmitwoche), format = "%d.%m.%Y"), "und dem", strftime(max(data$Meldejahrmitwoche), format = "%d.%m.%Y"), totalnumber, " Fälle an", i, "aufgetreten"))
-  }
-    cat("\n")
-    cat("\n")
-    cat("\n")
-    cat("\n")
-}
-
-```
-
-
-
-
-
-```{r}
-# 
-
-# 
-# data <- data %>% 
-#   group_by(Krankheit) %>% 
-#   summarise(Gesamtanzahl = sum(Anzahl)) %>% 
-#   mutate(autodecision = ifelse(Gesamtanzahl > 50, "Inzidenz", "Unentschieden")) %>% 
-#   mutate(autodecision = ifelse(Gesamtanzahl < 10, "Textdarstellung", "Anzahl")) 
-
 ```
