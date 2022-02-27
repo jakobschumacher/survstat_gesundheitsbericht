@@ -1,9 +1,11 @@
 ---
 title: "Gesundheitsbericht Survstat"
+output:
+  word_document: default
+  html_document: default
 date: "7.10.2019"
-output: html_document
 params:
-  Ort: "Reinickendorf"
+  Ort: Reinickendorf
 ---
 
 
@@ -41,6 +43,51 @@ for (i in krankheitsliste$Krankheit) {
   print(fallzahlPlot(i), floor = floorvalue)
   print(inzidenzPlot(i), floor = floorvalue)
 }
+```
+
+# Spezialgrafiken
+```{r Legionellose, results='asis', eval=FALSE}
+data <- readSurvstat("data/Deutschland/Inzidenz_Jahr_NurLegionellen.zip") %>% 
+  left_join(readSurvstat("data/Deutschland/Anzahl_Jahr_NurLegionellen.zip")) %>% 
+  mutate(Krankheit = "Legionellose")
+
+  # Make the graphs description
+  Quellenangabe <- data$Quellenangabe[1]
+  title <- paste("Fälle von Legionellose")
+  subtitle <- paste(data$Ort[1], 
+                    "\n vom", 
+                    strftime(min(data$Datum), format = "%d.%m.%Y"),
+                    "bis zum",
+                    strftime(max(data$Datum), format = "%d.%m.%Y"))
+  
+  
+  # Filter the data and floor to the floor
+  df_gesamtinzidenz <- data %>% 
+    group_by(Kreis) %>% 
+    summarise(GesamtInzidenz = mean(Inzidenz)) %>% 
+    arrange(desc(GesamtInzidenz)) %>% 
+    mutate(Rang = 1:n()) %>% 
+    mutate(Kreis = as.character(Kreis))
+    
+  df_de <- df_gesamtinzidenz %>% 
+    summarise(GesamtInzidenz = mean(GesamtInzidenz)) %>% 
+    mutate(Kreis = "Deutschland")
+  
+  df_be <- df_gesamtinzidenz %>% 
+    filter(str_detect(Kreis, "Berlin")) 
+  
+  df_top10 <- df_gesamtinzidenz %>% 
+    head(10)
+  
+  
+  Tabelle <- bind_rows(df_be, df_de, df_top10) %>% 
+    arrange(Rang) %>% 
+    mutate(GesamtInzidenz = round(GesamtInzidenz, 2)) %>% 
+    unique() %>% 
+    select(Rang, Kreis, GesamtInzidenz)
+  
+  kable(Tabelle )
+  
 ```
 
 

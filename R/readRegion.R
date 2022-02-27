@@ -2,6 +2,11 @@
 
 readRegion <- function(Region, Vergleichsdaten = "Deutschland", parameter = c("Fallzahl", "Inzidenz")){ 
 
+  # Testingvariables  
+    # Region = "Reinickendorf"
+    # parameter = c("Fallzahl", "Inzidenz")
+    # Vergleichsdaten = "Deutschland"
+    
   regionFolder <- paste0("data/", Region, "/")
   vergleichFolder <- paste0("data/", Vergleichsdaten, "/")
   
@@ -13,7 +18,7 @@ readRegion <- function(Region, Vergleichsdaten = "Deutschland", parameter = c("F
   
   data <- bind_rows(readSurvstat(regionFallzahlFile), readSurvstat(vergleichFallzahlFile)) %>% 
     left_join(bind_rows(readSurvstat(regionInzidenzFile), readSurvstat(vergleichInzidenzFile)), 
-              by = c("Krankheit", "Meldejahrmitwoche", "Quellenangabe", "Referenzdefinition", "Ort"))
+              by = c("Krankheit", "Datum", "Quellenangabe", "Referenzdefinition", "Ort"))
   
   data
 }

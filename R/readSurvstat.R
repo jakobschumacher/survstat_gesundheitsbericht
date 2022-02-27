@@ -1,5 +1,13 @@
 
 readSurvstat <- function(file){
+
+  # Testingvariables
+    # file = "data/Reinickendorf/FallzahlKrankheit_Jahrwoche_NurReinickendorf.zip"
+    # file = "data/Deutschland/FallzahlKrankheit_Jahrwoche_Deutschland.zip"
+    # file = "data/Reinickendorf/InzidenzKrankheit_Jahrwoche_NurReinickendorf.zip"
+    # file = "data/Deutschland/InzidenzKrankheit_Jahrwoche_Deutschland.zip"
+  
+  print(file)
   
   # Unzipping of the given file
   unzip(file)
@@ -51,8 +59,19 @@ readSurvstat <- function(file){
       mutate(Meldejahrmitwoche = str_replace(Meldejahrmitwoche, ".K", "-")) %>% 
       mutate(Meldejahrmitwoche = str_replace(Meldejahrmitwoche, "X", "")) %>% 
       mutate(Meldejahrmitwoche = paste0(Meldejahrmitwoche, "-", 3)) %>% 
-      mutate(Meldejahrmitwoche = ISOweek::ISOweek2date(Meldejahrmitwoche)) 
+      mutate(Meldejahrmitwoche = ISOweek::ISOweek2date(Meldejahrmitwoche)) %>% 
+      rename(Datum = Meldejahrmitwoche)
   }
+  
+  
+  # Change Meldejahr mit Woche to date
+  if (str_detect(paste(names(data), collapse = "---"), "Meldejahr---")) {
+    data <- data %>% 
+      mutate(Meldejahr = str_replace(Meldejahr, "X", "")) %>% 
+      mutate(Meldejahr = as.Date(paste0(Meldejahr, "/01/01")) ) %>% 
+      rename(Datum = Meldejahr)
+  }
+  
   
   # Attach the information from the metadata on filter
   data <- data %>% 
